@@ -276,27 +276,32 @@ int howManyBits(int x) {
   // 作为符号位;
   // 为了统一，不妨当 x 为负数时，将其取反, 那么也只需要找到最高位 1
   // 后再加一位就好, 即 n + 1.
+
+  // 将所有变量声明都移动到你所在函数或代码块的最前面
+  // 避免 bits.c:282: parse error
+  // dlc 编译器遵循的是比较古老的 C 语言标准（ANSI C / C89 / C90）
+  int bit_16, bit_8, bit_4, bit_2, bit_1, bit_0;
   int flag = x >> 31;
+
   x = ((~flag) & x) | (flag & (~x));
+  bit_16 = !!(x >> 16) << 4;
 
-  int bit16 = (!!(x >> 16)) << 4;
-
-  x = x >> bit16;
-  int bit_8 = !!(x >> 8) << 3;
+  x = x >> bit_16;
+  bit_8 = !!(x >> 8) << 3;
 
   x = x >> bit_8;
-  int bit_4 = !!(x >> 4) << 2;
+  bit_4 = !!(x >> 4) << 2;
 
   x = x >> bit_4;
-  int bit_2 = !!(x >> 2) << 1;
+  bit_2 = !!(x >> 2) << 1;
 
   x = x >> bit_2;
-  int bit_1 = !!(x >> 1);
+  bit_1 = !!(x >> 1);
 
   x = x >> bit_1;
-  int bit_0 = x;
+  bit_0 = x;
 
-  return bit16 + bit_8 + bit_4 + bit_2 + bit_1 + bit_0 + 1;
+  return bit_16 + bit_8 + bit_4 + bit_2 + bit_1 + bit_0 + 1;
 }
 // float
 /*
