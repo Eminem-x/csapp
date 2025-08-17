@@ -248,7 +248,14 @@ int isLessOrEqual(int x, int y) {
  *   Max ops: 12
  *   Rating: 4
  */
-int logicalNeg(int x) { return 2; }
+int logicalNeg(int x) {
+  // 当 x = 0 时，-x = 0，两者符号位相同，而 x ≠ 0 时，-x 与 x 的符号位显然不同
+  // 特殊处理 Tmin, 负数特判
+  int x_sign = (x >> 31) & 1;
+  int neg_x_sign = ((~x + 1)) >> 31 & 1;
+  int result = ~(x_sign ^ neg_x_sign) + 2;
+  return result & (~x_sign + 2);
+}
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
  *  Examples: howManyBits(12) = 5
@@ -261,7 +268,36 @@ int logicalNeg(int x) { return 2; }
  *  Max ops: 90
  *  Rating: 4
  */
-int howManyBits(int x) { return 0; }
+int howManyBits(int x) {
+  // 参考：https://zhuanlan.zhihu.com/p/472188244
+  // x 为正数，以八位为例：0011 1010，需找到最高位 1，除此以外，还需一位 0
+  // 作为符号位;
+  // x 为负数，以八位为例：1100 1001，需找到最高位 0，除此以外，还需更高一位 1
+  // 作为符号位;
+  // 为了统一，不妨当 x 为负数时，将其取反, 那么也只需要找到最高位 1
+  // 后再加一位就好, 即 n + 1.
+  int flag = x >> 31;
+  x = ((~flag) & x) | (flag & (~x));
+
+  int bit16 = (!!(x >> 16)) << 4;
+
+  x = x >> bit16;
+  int bit_8 = !!(x >> 8) << 3;
+
+  x = x >> bit_8;
+  int bit_4 = !!(x >> 4) << 2;
+
+  x = x >> bit_4;
+  int bit_2 = !!(x >> 2) << 1;
+
+  x = x >> bit_2;
+  int bit_1 = !!(x >> 1);
+
+  x = x >> bit_1;
+  int bit_0 = x;
+
+  return bit16 + bit_8 + bit_4 + bit_2 + bit_1 + bit_0 + 1;
+}
 // float
 /*
  * floatScale2 - Return bit-level equivalent of expression 2*f for
