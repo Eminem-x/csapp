@@ -177,7 +177,14 @@ int isTmax(int x) {
  *   Max ops: 12
  *   Rating: 2
  */
-int allOddBits(int x) { return 2; }
+int allOddBits(int x) {
+  int a = 0xAA;
+  a = x & a;         // expected 0xAA
+  a = (x >> 8) & a;  // expected 0xAA
+  a = (x >> 16) & a; // expected 0xAA
+  a = (x >> 24) & a; // expected 0xAA
+  return !(a ^ 0xAA);
+}
 /*
  * negate - return -x
  *   Example: negate(1) = -1.
@@ -185,7 +192,7 @@ int allOddBits(int x) { return 2; }
  *   Max ops: 5
  *   Rating: 2
  */
-int negate(int x) { return 2; }
+int negate(int x) { return ~x + 1; }
 // 3
 /*
  * isAsciiDigit - return 1 if 0x30 <= x <= 0x39 (ASCII codes for characters '0'
@@ -195,7 +202,14 @@ int negate(int x) { return 2; }
  *   Max ops: 15
  *   Rating: 3
  */
-int isAsciiDigit(int x) { return 2; }
+int isAsciiDigit(int x) {
+  int a = 0x30;
+  int b = (x & a) ^ a; // expected 0
+  int c = 0x3F;
+  int d = (c | (x + 6)) ^ c; // expected 0
+  int e = (x >> 31) | 0;     // expected 0, make sure postive
+  return !(b | d | e);
+}
 /*
  * conditional - same as x ? y : z
  *   Example: conditional(2,4,5) = 4
