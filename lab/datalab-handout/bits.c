@@ -217,7 +217,10 @@ int isAsciiDigit(int x) {
  *   Max ops: 16
  *   Rating: 3
  */
-int conditional(int x, int y, int z) { return 2; }
+int conditional(int x, int y, int z) {
+  int mask = !x + ~0; // FF or 00
+  return (y & mask) | (z & ~mask);
+}
 /*
  * isLessOrEqual - if x <= y  then return 1, else return 0
  *   Example: isLessOrEqual(4,5) = 1.
@@ -225,7 +228,17 @@ int conditional(int x, int y, int z) { return 2; }
  *   Max ops: 24
  *   Rating: 3
  */
-int isLessOrEqual(int x, int y) { return 2; }
+int isLessOrEqual(int x, int y) {
+  int x_sign = (x >> 31) & 1;
+  int y_sign = (y >> 31) & 1;
+  int sub = x + ~y + 1;
+  int sub_sign = (sub >> 31) & 1;
+  // printf("ycx debug %d %d %d %d\n", x_sign, y_sign, sub, sub_sign);
+  // 1. x 是负数，y 是整数，一定成立
+  // 2. 异号相减可能会溢出，当 sub 结果小于 0 时，判断是否同号
+  // 3. 特殊判断 0
+  return (x_sign & !y_sign) | (sub_sign & (x_sign ^ !y_sign)) | !sub;
+}
 // 4
 /*
  * logicalNeg - implement the ! operator, using all of
