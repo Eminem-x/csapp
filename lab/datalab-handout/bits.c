@@ -141,14 +141,20 @@ NOTES:
  *   Max ops: 14
  *   Rating: 1
  */
-int bitXor(int x, int y) { return x - y; }
+int bitXor(int x, int y) {
+  // x ^ y = ~(x & y) & ~(~x & ~y)
+  int a = x & y;
+  int b = (~x) & (~y);
+  int c = (~a) & (~b);
+  return c;
+}
 /*
  * tmin - return minimum two's complement integer
  *   Legal ops: ! ~ & ^ | + << >>
  *   Max ops: 4
  *   Rating: 1
  */
-int tmin(void) { return 2; }
+int tmin(void) { return (1 << 31); }
 // 2
 /*
  * isTmax - returns 1 if x is the maximum, two's complement number,
@@ -157,7 +163,12 @@ int tmin(void) { return 2; }
  *   Max ops: 10
  *   Rating: 1
  */
-int isTmax(int x) { return 2; }
+int isTmax(int x) {
+  int a = ((x + 1) ^ x) + 1; // expected 0
+  int b = ~x;                // expected not 0, make sure not -1
+  int d = a | !b;            // expected 0
+  return !d;
+}
 /*
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
  *   where bits are numbered from 0 (least significant) to 31 (most significant)
