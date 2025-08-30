@@ -404,4 +404,21 @@ int floatFloat2Int(unsigned uf) {
  *   Max ops: 30
  *   Rating: 4
  */
-unsigned floatPower2(int x) { return 2; }
+unsigned floatPower2(int x) {
+  // 最小表示 2^(-126 - 23), 即非规格化的最小值，0x1
+  if (x < (-126 - 23)) {
+    return 0;
+  }
+  // 最大表示 2^127, 即规格化的最大值
+  if (x > 127) {
+    return 0x7f800000;
+  }
+
+  // 处理 2^-149 ~ 2^127
+  if (x >= 0) {
+    // 2^(e - Bias) -> e = Bias + x
+    return (127 + x) << 23;
+  }
+
+  return 0;
+}
