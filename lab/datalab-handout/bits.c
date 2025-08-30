@@ -315,7 +315,27 @@ int howManyBits(int x) {
  *   Max ops: 30
  *   Rating: 4
  */
-unsigned floatScale2(unsigned uf) { return 2; }
+unsigned floatScale2(unsigned uf) {
+  // 获取 sign、exp、frac
+  unsigned sign = (uf >> 31) & 0x1;
+  unsigned exp = (uf >> 23) & 0xff;
+  unsigned frac = uf & 0x7fffff;
+
+  // NaN
+  if (exp == 0xff) {
+    return uf;
+  }
+
+  // 非规格化 frac * 2
+  if (exp == 0) {
+    frac = frac << 1;
+    return (sign << 31) | (exp << 23) | frac;
+  }
+
+  // 规格化 e + 1
+  exp = exp + 1;
+  return (sign << 31) | (exp << 23) | frac;
+}
 /*
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
  *   for floating point argument f.
@@ -328,7 +348,49 @@ unsigned floatScale2(unsigned uf) { return 2; }
  *   Max ops: 30
  *   Rating: 4
  */
-int floatFloat2Int(unsigned uf) { return 2; }
+int floatFloat2Int(unsigned uf) {
+  // 当前版本的 C 语言所有变量定义要提前声明
+  //
+  // 获取 sign、exp、frac
+  unsigned sign = (uf >> 31) & 0x1;
+  unsigned exp = (uf >> 23) & 0xff;
+  unsigned frac = uf & 0x7fffff;
+  // 不能定义为 unsigned, 因为结果可能会是负数
+  int E = exp - 0x7fu;
+
+  // printf("ycx debug %u, %u, %u, %d\n", sign, exp, frac, E);
+
+  // NaN and infinity
+  // int(f), 1.x << 31 means infinity
+  if (exp == 0xff || E >= 31) {
+    return 0x80000000u;
+  }
+
+  // 非规格化，直接返回 0
+  if (exp == 0) {
+    return 0;
+  }
+
+  // 规格化, 因为 frac 是 23 位, 加上默认的 1
+  frac = (0x1 << 23) | frac;
+
+  // 如果 e - Bias 小于 0，此时整数部分一定是 0
+  if (E < 0) {
+    return 0;
+  }
+  // 如果 e - Bias 小于 23，说明 frac 无法全部保留
+  if (E < 23) {
+    frac = frac >> (23 - E);
+  } else {
+    frac = frac << (E - 23);
+  }
+
+  // 正数直接返回
+  if (!sign) {
+    return frac;
+  }
+  return -frac;
+}
 /*
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
  *   (2.0 raised to the power x) for any 32-bit integer x.
