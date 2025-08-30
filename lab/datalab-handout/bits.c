@@ -415,10 +415,10 @@ unsigned floatPower2(int x) {
   }
 
   // 处理 2^-149 ~ 2^127
-  if (x >= 0) {
+  if (x >= -126) {
     // 2^(e - Bias) -> e = Bias + x
     return (127 + x) << 23;
   }
 
-  return 0;
+  return (1 << 23) >> (-x - 126);
 }
